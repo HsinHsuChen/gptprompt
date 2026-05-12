@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台股看盤提問模板</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --surface2: #1a1e28;
+    --border: #252a38;
+    --accent: #e8b84b;
+    --accent2: #5bc8af;
+    --accent3: #e05252;
+    --text: #d4d8e8;
+    --text-dim: #6b7290;
+    --text-bright: #f0f2ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--accent));
+    margin: 0 auto 16px;
+  }
+  .header-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 900;
+    color: var(--text-bright);
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    white-space: nowrap;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d0f14;
+    font-weight: 600;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #353b52; }
+
+  .card-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .badge-gemini { background: #1a3a35; color: var(--accent2); }
+  .badge-claude { background: #2a2010; color: var(--accent); }
+  .badge-both { background: #1e2235; color: #8899dd; }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    flex: 1;
+  }
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .copy-btn.copied { border-color: var(--accent2); color: var(--accent2); }
+
+  .prompt-box {
+    padding: 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .highlight { color: var(--accent); }
+  .highlight2 { color: var(--accent2); }
+  .highlight3 { color: var(--accent3); }
+
+  .tip-box {
+    margin: 20px 0;
+    padding: 14px 18px;
+    background: #131820;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+  .tip-box strong { color: var(--accent); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 28px 0;
+  }
+
+  .platform-legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">Taiwan Stock · Value Investing</div>
+  <h1>每日看盤提問模板</h1>
+  <div class="subtitle">台股 · 中長線 · 總經/產業研究</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('morning')">🌅 開盤前</div>
+  <div class="tab" onclick="switchTab('intraday')">📊 盤中</div>
+  <div class="tab" onclick="switchTab('industry')">🏭 產業研究</div>
+  <div class="tab" onclick="switchTab('stock')">🔍 個股深挖</div>
+  <div class="tab" onclick="switchTab('macro')">🌍 總經面</div>
+  <div class="tab" onclick="switchTab('tips')">💡 使用技巧</div>
+</div>
+
+<!-- 開盤前 -->
+<div class="section active" id="morning">
+  <div class="platform-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#5bc8af"></div>建議用 Gemini</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8b84b"></div>建議用 Claude</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8899dd"></div>兩者皆可</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">每日總經快報（每天早上必用）</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p1')">複製</button>
+    </div>
+    <div class="prompt-box" id="p1">今天是 <span class="highlight">[日期]</span>，開盤前請幫我整理：
+
+1. 【昨夜美股】道瓊、S&P500、那斯達克漲跌幅與主因
+2. 【亞股動態】日韓港股盤前走勢
+3. 【台股相關】費城半導體指數、ADR（台積電/聯發科）表現
+4. 【重大消息】影響台股的總經新聞（Fed 動態、地緣政治、匯率）
+5. 【今日關注】今天台股盤中需注意的關鍵時間點或事件
+
+請附上資料來源與時間，不要引用超過 48 小時的舊資訊。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">台股今日盤前氣氛掃描</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p2')">複製</button>
+    </div>
+    <div class="prompt-box" id="p2">請搜尋今天（<span class="highlight">[日期]</span>）台股開盤前的市場資訊：
+
+1. 三大法人昨日買賣超前五大個股
+2. 外資期貨未平倉口數與方向
+3. 融資融券餘額變化趨勢
+4. 今日除權息、法說會、重大公告名單
+5. 市場情緒：恐慌貪婪指標現況
+
+⚠️ 請確認資料為最新，並標示資料日期。</div>
+  </div>
+</div>
+
+<!-- 盤中 -->
+<div class="section" id="intraday">
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">盤中異常訊號快查</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p3')">複製</button>
+    </div>
+    <div class="prompt-box" id="p3">目前台股盤中（約 <span class="highlight">[時間]</span>），請幫我查：
+
+1. 台積電（2330）、聯發科（2454）即時走勢與成交量是否異常
+2. 今日漲停/跌停股票有哪些產業族群
+3. 有無突發重大新聞影響特定族群
+4. 加權指數與櫃買指數的強弱對比
+
+請只給我最新 1 小時內的資訊。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">盤中走勢邏輯解讀（貼入新聞後用）</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p4')">複製</button>
+    </div>
+    <div class="prompt-box" id="p4">以下是今天盤中的幾則新聞：
+
+<span class="highlight2">【貼入你剪貼的新聞內容】</span>
+
+請幫我分析：
+1. 這些消息對台股中長線（6～18 個月）的影響是正面、負面還是中性？
+2. 受益族群與受害族群各是哪些？
+3. 市場目前的反應是過度反應還是反應不足？請給出你的判斷依據
+4. 我該在這個時間點採取什麼行動（加碼/減碼/觀望）？請給出邏輯而非建議</div>
+  </div>
+</div>
+
+<!-- 產業研究 -->
+<div class="section" id="industry">
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">產業景氣現況掃描</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p5')">複製</button>
+    </div>
+    <div class="prompt-box" id="p5">請幫我搜尋 <span class="highlight">[產業名稱，例：AI伺服器、半導體封測、電動車]</span> 產業的最新動態：
+
+1. 近 2 週內的重大新聞（含日期）
+2. 主要客戶/供應商的最新訂單或庫存訊號
+3. 法人最新報告的核心觀點（如有）
+4. 美國/日本/韓國同業的近期股價走勢
+5. 目前景氣循環位置判斷（底部/復甦/高峰/衰退）
+
+⚠️ 請標記每筆資訊的來源與日期，排除 30 天以上的舊資料。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">產業供應鏈深度分析</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p6')">複製</button>
+    </div>
+    <div class="prompt-box" id="p6">我想深入研究 <span class="highlight">[產業名稱]</span> 的台灣供應鏈佈局，請幫我：
+
+1. 畫出這個產業的台灣供應鏈結構（上游→中游→下游）
+2. 每個環節列出 2～3 家代表性台灣上市公司（含股票代號）
+3. 分析各環節的毛利率水準與護城河深度
+4. 哪些環節在未來 2 年最可能受益？原因為何？
+5. 目前市場最忽視（低估）的環節是哪裡？
+
+請以中長線價值投資角度回答，不需要預測短期股價。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-both">BOTH</span>
+      <span class="card-title">產業比較篩選</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p7')">複製</button>
+    </div>
+    <div class="prompt-box" id="p7">請比較以下幾個產業在未來 12～24 個月的投資吸引力：
+
+產業清單：<span class="highlight">[例：AI散熱、車用電子、DRAM、太陽能]</span>
+
+比較維度：
+- 景氣位置（當前所在循環階段）
+- 需求能見度（訂單可視季度）
+- 台灣廠商全球市占競爭力
+- 潛在風險（技術/地緣/匯率）
+- 法人目前態度（加碼/減碼/中立）
+
+最後給出優先研究順序排名，並說明原因。</div>
+  </div>
+</div>
+
+<!-- 個股深挖 -->
+<div class="section" id="stock">
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">個股最新消息快查</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p8')">複製</button>
+    </div>
+    <div class="prompt-box" id="p8">請搜尋 <span class="highlight">[公司名稱+股票代號]</span> 最近 30 天內的重要消息：
+
+1. 法說會/重訊/公告內容摘要
+2. 三大法人買賣超趨勢
+3. 外資目標價異動
+4. 競爭對手或客戶的相關新聞
+5. 近期媒體報導的核心觀點
+
+請列出每筆資訊的日期，若無近期新消息請直接告知。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">個股基本面深度評估</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p9')">複製</button>
+    </div>
+    <div class="prompt-box" id="p9">我正在研究是否長期持有 <span class="highlight">[公司名稱]（[股票代號]）</span>，以下是我整理的資料：
+
+<span class="highlight2">【貼入財報重點、近期新聞或法說會摘要】</span>
+
+請從中長線價值投資角度幫我分析：
+
+【商業模式】
+- 核心競爭力是什麼？護城河有多深？
+
+【財務品質】
+- 毛利率/ROE/自由現金流趨勢是否健康？
+- 有無財務紅旗需要注意？
+
+【成長動能】
+- 未來 2～3 年的成長催化劑是什麼？
+- 目前市場共識預估是否合理？
+
+【風險評估】
+- 主要下行風險（前 3 名）
+- 如果最壞情況發生，影響有多嚴重？
+
+【估值感受】
+- 現在的本益比/股價淨值比在歷史位置大概在哪裡？
+- 是否值得進一步研究建倉？</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">持倉健檢（定期用）</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p10')">複製</button>
+    </div>
+    <div class="prompt-box" id="p10">我目前持有以下個股，請幫我做季度健檢：
+
+<span class="highlight2">【個股清單，例：
+- 台積電（2330）：佔倉位 30%，成本 620 元
+- 聯發科（2454）：佔倉位 20%，成本 1050 元
+】</span>
+
+針對每一檔：
+1. 當初買入的投資邏輯是否仍成立？
+2. 最近有無出現邏輯破壞的訊號？
+3. 倉位配置是否需要調整？
+
+最後給我整體投資組合的風險集中度評估。</div>
+  </div>
+</div>
+
+<!-- 總經面 -->
+<div class="section" id="macro">
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">每週總經儀表板</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p11')">複製</button>
+    </div>
+    <div class="prompt-box" id="p11">請幫我整理這週（<span class="highlight">[週次/日期範圍]</span>）的總經重點：
+
+【貨幣政策】
+- Fed 最新表態與市場對降息路徑的預期變化
+- 台灣央行最新動態
+
+【景氣指標】
+- 美國：ISM 製造業/非農就業/CPI 最新數據
+- 台灣：外銷訂單、PMI、出口年增率
+
+【匯率與資金】
+- 美元指數走勢與新台幣匯率
+- 外資近期對台股的資金動向
+
+【本週重要行事曆】
+- 接下來 5 個交易日有哪些重要數據公布？
+
+請每項都標明資料發布日期。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">總經情境分析（貼入資料後用）</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 'p12')">複製</button>
+    </div>
+    <div class="prompt-box" id="p12">以下是我收集到的近期總經資訊：
+
+<span class="highlight2">【貼入本週重要總經新聞或數據】</span>
+
+請幫我分析：
+
+1. 目前總體環境對台股中長線是偏多還是偏空？評分 1～10
+2. 對以下族群的影響方向：
+   - 台灣科技股（半導體/電子）
+   - 台灣傳產股（金融/鋼鐵/航運）
+   - 台幣計價資產整體
+3. 若美國經濟出現衰退跡象，台股最脆弱的產業是哪些？
+4. 現在的市場環境，適合「進攻」還是「防守」型的佈局策略？請說明邏輯。</div>
+  </div>
+</div>
+
+<!-- 使用技巧 -->
+<div class="section" id="tips">
+  <div class="tip-box">
+    <strong>🔑 核心原則：讓 AI 強迫自己給新資訊</strong><br>
+    永遠在提問末尾加上：「請標記每筆資料的日期，若資料超過 X 天請告知」。這樣可有效避免 GPT 回覆舊資訊。
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-gemini">GEMINI</span>
+      <span class="card-title">防止回覆舊資訊的萬用句尾</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 't1')">複製</button>
+    </div>
+    <div class="prompt-box" id="t1">⚠️ 請注意：
+- 每一項資訊請標明來源名稱與發布日期
+- 若找不到 7 天內的資訊，請直接告訴我「近期無新消息」
+- 不要用記憶中的舊數據填充，請實際搜尋後回答
+- 今天是 <span class="highlight">[填入今天日期]</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-claude">CLAUDE</span>
+      <span class="card-title">深度分析時的角色設定句首</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 't2')">複製</button>
+    </div>
+    <div class="prompt-box" id="t2">你是一位專注台灣股市的資深產業分析師，擅長中長線價值投資研究。你的分析風格：
+- 重視產業供應鏈邏輯，不追短線熱點
+- 以財務品質為核心選股依據
+- 敢於提出反市場共識的觀點，並說明依據
+- 分析時會同時考慮上行機會與下行風險
+
+<span class="highlight2">【接著貼入你的實際問題】</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge badge-both">BOTH</span>
+      <span class="card-title">Gemini + Claude 協作流程</span>
+      <button class="copy-btn" onclick="copyPrompt(this, 't3')">複製</button>
+    </div>
+    <div class="prompt-box" id="t3"><span class="highlight">Step 1 → 用 Gemini</span>（早上 8:30 前）
+問：今日總經快報 + 三大法人動向 + 目標產業新聞
+
+<span class="highlight">Step 2 → 複製 Gemini 的回覆</span>
+把重要段落貼到 Claude
+
+<span class="highlight">Step 3 → 用 Claude</span>
+問：「以下是今天的市場資訊，請幫我分析對 [產業/個股] 的中長線影響...」
+
+<span class="highlight3">為什麼這樣做有效？</span>
+Gemini 負責「抓最新資料」
+Claude 負責「深度邏輯推演」
+兩者互補，不互相替代</div>
+  </div>
+
+  <div class="tip-box">
+    <strong>📌 三個省時技巧</strong><br><br>
+    1. 把常用的「角色設定句首」存成手機捷徑，每次一鍵貼上<br>
+    2. Gemini 問完後，直接說「請把這份分析匯出成 Google Sheets 格式」<br>
+    3. Claude 對話開頭先說「我是台股中長線投資者，專注產業研究」，後續問題品質會大幅提升
+  </div>
+</div>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const ids = ['morning','intraday','industry','stock','macro','tips'];
+    t.classList.toggle('active', ids[i] === id);
+  });
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.toggle('active', s.id === id);
+  });
+}
+
+function copyPrompt(btn, id) {
+  const el = document.getElementById(id);
+  const text = el.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已複製 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '複製';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
